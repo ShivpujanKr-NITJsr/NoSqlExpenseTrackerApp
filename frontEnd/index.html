@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  </head>
+  <body id="bodyid">
+  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    
+    <form onsubmit="saveToDataBaseStorage(event)" class="form mt-3">
+
+        <div>
+
+            <label for="name">Choose expenseamount:</label>
+            <input type="number" name="price" id="price" required>
+
+            <label for="description">Choose description:</label>
+            <input type="text" name="description" id="description">
+
+            <label for="category">Choose a category</label>
+            <select type="radio" id="category" name="category">
+                <option value="fuel">fuel</option>
+                <option value="movies">movies</option>
+                
+                <option value="travel">travel</option>
+                <option value="food">food</option>
+                <option value="petrol">petrol</option>
+                <option value="salary">salary</option>
+                <option value="suits">suits</option>
+                <option value="picnic">picnic</option>
+            </select>
+            <input type="submit" class="btn" value="Add Expense" style="border: solid 1px black;">
+
+        </div>
+        
+    
+
+    </form>
+    <div>
+      <!-- <button id="pageshow" >Buy Premium</button>
+       -->
+       <label for="pagenumber">Page Views:</label>
+       <select name="pagenumber" id="pagenumber" type="radio" >
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+       </select>
+    </div>
+
+    <button id="rzp-button1" >Pay with Razorpay</button>
+    <p id="premiumuser" style="padding-left: 15px;display: none;">hi</p>
+
+    <h2 style="margin-left: 10px;">Expenses</h2>
+    <ul id="listofitems">
+
+    </ul>
+
+    <ul id="leaderboard"  style="margin-left: 40px;"></ul>
+
+    <ul id="downloadeurl" style="margin-left: 40px; margin-top:30px"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="index.js">
+
+    </script>
+
+</body>
+</html>
