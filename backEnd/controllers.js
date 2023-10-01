@@ -246,7 +246,7 @@ exports.getexpenses = (req, res, next) => {
     console.log(req.headers.pagenumber)
     const itemsPerPage=Number(req.headers.pagenumber);
     const of=((req.query.page||1)-1)
-    console.log('i am in server for expense list')
+    
     Expense.find( { UserId: req.iduse }).skip(of*itemsPerPage).limit(itemsPerPage)
         .then(async result => {
             let pre;let nex;let prev;let nextv;
@@ -432,7 +432,7 @@ exports.downloading=async(req,res,next)=>{
 
         const fileurl=await uploadTos3(stringified,filename)
       
-        await   Filedownloaded.create({url:fileurl,UserId:uid ,date:Sequelize.literal('CURRENT_TIMESTAMP')})
+        await   Filedownloaded.create({url:fileurl,UserId:uid ,date:Date.now})
         // console.log(fileurl)
         res.status(200).json({fileurl,success:true})
     }catch(err){
@@ -474,7 +474,7 @@ async function  uploadTos3(data,filename){
 }
 
 exports.allUrl=(req,res,next)=>{
-
+    // console.log('all url')
     try{
         const id=req.iduse;
 
