@@ -1,3 +1,2 @@
-node_modules
 backEnd/.env
-frontEnd/report.html
+backEnd/node_modules

@@ -1,6 +1,6 @@
 const { Expense, User, Premium ,ForgotPassword,Filedownloaded} = require('./models')
 const {createTransport}=require('nodemailer')
-const sequelize=require('./databasecon')
+// const sequelize=require('./databasecon')
 require('dotenv').config();
 const Sib=require('sib-api-v3-sdk')
 const {v4:uuidv4}=require('uuid')
@@ -14,14 +14,14 @@ const path=require('path')
 const Razorpay = require('razorpay')
 
 const bcrypt = require('bcrypt');
-const Sequelize = require('sequelize');
+// const Sequelize = require('sequelize');
 
 exports.creating = (req, res, next) => {
     const uname = req.body.name;
     const uemail = req.body.email;
     const upassword = req.body.password;
 
-    User.findAll({ where: { email: uemail } })
+    User.find({ email: uemail } )
         .then(re => {
 
             if (re.length > 0) {
@@ -32,7 +32,9 @@ exports.creating = (req, res, next) => {
                     User.create({
                         name: uname,
                         email: uemail,
-                        password: hash
+                        password: hash,
+                        ispremiumuser:false,
+                        totalexpense:0
                     }).then(result => res.json({ message: 'Successfully created new user' }))
 
 
@@ -50,7 +52,7 @@ exports.logging = (req, res, next) => {
     const uemail = req.body.email;
     const upassword = req.body.password;
 
-    User.findAll({ where: { email: uemail } })
+    User.find({ email: uemail } )
         .then(re => {
 
             if (re.length > 0) {
@@ -86,9 +88,9 @@ exports.logging = (req, res, next) => {
 exports.forgotPasswd= async (req,res,next)=>{
     try {
         const result = await User.findOne({
-            where: {
+       
                 email: req.params.email
-            }
+            
         })
         console.log(result);
         const uuid = uuidv4();
@@ -96,7 +98,7 @@ exports.forgotPasswd= async (req,res,next)=>{
         if (result!== null) {
 
             const obj = {
-                UserId: result.id,
+                UserId: result._id,
                 isActive: true,
                 uuid: uuid,
             }
@@ -135,7 +137,7 @@ exports.forgotPasswd= async (req,res,next)=>{
             
         }
         else {
-            res.json({message:"Invalid email id",status:501});
+            res.status(404).json({message:"Invalid email id",status:501});
         }
     } catch (error) {
         console.log(error);
@@ -147,12 +149,11 @@ exports.resetPassword=(req,res,next)=>{
     const uuidd=req.params.uuidd;
     console.log(req)
 
-    ForgotPassword.findOne({where:{uuid:uuidd,isActive:true}})
+    ForgotPassword.findOne({uuid:uuidd,isActive:true})
         .then(result=>{
           
             if(result){
-                // res.send('<div style="justify-content:center;"><form > <h1>Enter your new password</h1><br> <input type="text" name="password" id="password"> <button>Submit</button></form></div>')
-                // res.send({msg:path.join(__dirname,'../','frontEnd','getpaswd.html')})
+               
                 fs.readFile(path.join(__dirname,'../','frontEnd','setpaswd.html'), 'utf8', (err, html) => {
                     if (err) {
                       console.error(err);
@@ -162,10 +163,15 @@ exports.resetPassword=(req,res,next)=>{
                       const updatedHtml = html.replace('<%= uuidd %>', uuidd);
                 
                       // Send the HTML content with the form and JavaScript
+                      res.setHeader('Content-Security-Policy', `script-src 'self' cdnjs.cloudflare.com 'unsafe-inline'`)
                       res.send(updatedHtml);
                     //   res.end(updatedHtml)
                     }
                 });
+                // res.type('application/javascript');
+                // res.setHeader('Content-Type', 'text/html');
+                // res.
+                // sendFile(path.join(__dirname,'..','frontEnd','setpaswd.html'))
             }else{
                 res.status(404).json({message:'link is not valid',success:false})
             }
@@ -178,21 +184,26 @@ exports.resetPassword=(req,res,next)=>{
 exports.changingPasswd=async (req,res,next)=>{
     const uuidd=req.body.uuidd;
     const paswd=req.body.password;
-    const t=await sequelize.transaction();
+    // const t=await sequelize.transaction();
     try{
        
 
-        const fp=await ForgotPassword.findOne({where:{uuid:uuidd,isActive:true},transaction: t})
+        const fp=await ForgotPassword.findOne({uuid:uuidd,isActive:true})
 
-        const user=await User.findOne({where:{id:fp.UserId},transaction: t});
+        if(!fp){
+            return res.status(404).json('invalid link')
+        }
+        const user=await User.findOne({_id:fp.UserId});
 
-        await fp.update({isActive:false},{transaction: t})
+        // if(!user){
+        //     return res.status(404).json('user does not exist')
+        // }
+        await ForgotPassword.updateOne({_id:fp._id},{isActive:false})
 
         bcrypt.hash(paswd, 10, async (err, hash) => {
-        user.update({password:hash},{transaction: t}).then(async result => {
+        User.updateOne({_id:fp.UserId},{password:hash}).then(async result => {
             // res.json({ message: 'Successfully created new user' })
-            await t.commit()
-
+           
             res.status(200).json({message:'your password is updated , now go to login page and login again',success:'ok'})
         
         })})
@@ -201,7 +212,7 @@ exports.changingPasswd=async (req,res,next)=>{
         
         
     }catch(err){
-        await t.rollback()
+       
         console.log(err)
         console.log('something went wrong')
         res.status(503).json('got error while updating')
@@ -213,12 +224,7 @@ exports.changingPasswd=async (req,res,next)=>{
 async function  nextt(userid,ofset,itemsPerPage){
 
     try{
-        const res= await Expense.findAll({ where: { UserId: userid }
-            ,
-            limit:itemsPerPage,
-            offset:ofset
-            
-         })
+        const res= await Expense.find({ UserId: userid }).skip(ofset).limit(itemsPerPage)
         
         if (res.length>0){
             // console.log(res)
@@ -240,10 +246,8 @@ exports.getexpenses = (req, res, next) => {
     console.log(req.headers.pagenumber)
     const itemsPerPage=Number(req.headers.pagenumber);
     const of=((req.query.page||1)-1)
-    Expense.findAll({ where: { UserId: req.iduse }
-    ,offset:of*itemsPerPage,
-    limit:itemsPerPage
- })
+    console.log('i am in server for expense list')
+    Expense.find( { UserId: req.iduse }).skip(of*itemsPerPage).limit(itemsPerPage)
         .then(async result => {
             let pre;let nex;let prev;let nextv;
             if(of===0){
@@ -264,28 +268,21 @@ exports.getexpenses = (req, res, next) => {
 }
 
 exports.delexpenses = async (req, res, next) => {
-    const t=await sequelize.transaction()
+  
 
     try{
-        const result= await Expense.findAll({ where: { id: req.params.id},transaction:t })
+        const result= await Expense.find( { _id: req.params.id})
         
-        const users=await User.findOne({where:{id:result[0].UserId},transaction: t})
-        await result[0].destroy({transaction: t});
+        const users=await User.findOne({_id:result[0].UserId})
+        await Expense.deleteOne({ _id: req.params.id});
         const p=users.totalexpense-result[0].price;
-        await users.update({totalexpense:p}, {transaction: t});
+        await User.updateOne({_id:result[0].UserId},{totalexpense:p});
         
-        
-
-        await t.commit();
         res.json(result);
     }catch(err){
-        await t.rollback();
         console.log(err)
     }
-    
-            
-            
-           
+       
         
 }
 
@@ -299,7 +296,7 @@ exports.addexpense =async (req, res, next) => {
         }
         id = decoded;
     });
-    const t = await sequelize.transaction();
+    // const t = await sequelize.transaction();
 
     try {
         const expenseResult = await Expense.create({
@@ -307,22 +304,22 @@ exports.addexpense =async (req, res, next) => {
             description: req.body.description,
             category: req.body.category,
             UserId: id
-        }, { transaction: t });
-        const user = await User.findOne({ where: {id:id},transaction: t});
+        });
+        const user = await User.findOne({_id:id});
         let p;
         if (user.totalexpense === null) {
             p = parseFloat(expenseResult.price);
         } else {
             p = parseFloat(user.totalexpense)+parseFloat(expenseResult.price);
         }
-        await user.update({totalexpense: p}, { transaction: t });
+        await User.updateOne({_id:user._id},{totalexpense: p});
 
-        await t.commit();
+
         res.json(expenseResult);
     } catch (err) {
         console.error(err);
 
-        await t.rollback();
+       
         // res.status(500).json(err);
     }
 
@@ -368,9 +365,10 @@ exports.updatingPremiumStatus = async(req, res, next) => {
         
         try{
             console.log('payment passed')
-            const p1=Premium.findAll({where:{orderid:uorderid}})
-                .then(result=>{result[0].update({paymentid:upaymentid,status:'SUCCESSFUL'})})
-            const p2=User.findAll({where:{id:req.iduse}}).then(re=>{re[0].update({ispremiumuser:true})})
+            const p1=Premium.find({orderid:uorderid})
+                .then(async result=>{
+                    await Premium.updateOne({_id:result[0]._id},{paymentid:upaymentid,status:'SUCCESSFUL'})})
+            const p2=User.find({_id:req.iduse}).then(async re=>{await User.updateOne({_id:re[0]._id},{ispremiumuser:true})})
             
             Promise.all([p1,p2]).then(()=>{
                 return res.status(202).json({success:true,message:"Transactions successful"})
@@ -381,8 +379,6 @@ exports.updatingPremiumStatus = async(req, res, next) => {
             return res.status(403).json({success:false,
                 message:"transaction cancelled due to error"})
         }
-    
-
 
     }else{
 
@@ -400,95 +396,17 @@ exports.updatingPremiumStatus = async(req, res, next) => {
         }catch(error){
             return res.status(403).json({success:false,message:err.message})
         }
-        
     }
     
 
 }
 
 exports.leaderboardShow= async(req,resp,next)=>{
-    // let Users=[];
-    // User.findAll()
-    //     .then(res=>{
-    //         for(let i=0;i<res.length;i++){
-    //             let sum=0;
-    //             Expense.findAll({where:{UserId:res[i].id}})
-    //             .then(result=>{
-    //                 for(let j=0;j<result.length;j++){
-    //                     sum+=result[j].price;
-    //                 }
-    //                 console.log(`${res[i].name}= ${sum}`)
 
-    //                 // let obj={
-    //                 //     name:res[i].name,
-    //                 //     expense:sum
-    //                 // }
-    //                 // Users.push(obj)
-    //             })
-                
-    //             let obj={
-    //                 name:res[i].name,
-    //                 expense:sum
-    //             }
-    //             Users.push(obj)
-    //         }
-    //         resp.status(200).json(Users);
-    //     }).catch(err=>console.log(err))
-
-    // try{
-    //     // const users=await User.findAll()
-    //     // const expenses=await users.map(user=>{
-    //     //     Expense.findAll({where:{UserId:user.id}})
-    //     // })
-
-        
-    // }catch(err){
-
-    // }
-
-    // User.findAll()         //working
-    //     .then(res=>{
-    //         let promises=res.map(user=>{
-    //             return Expense.findAll({where:{UserId:user.id}})
-    //                 .then(exp=>{
-    //                     const sum = exp.reduce((sumtotal, expense) => sumtotal + expense.price, 0);
-    //                     return {
-    //                         name:user.name,
-    //                         expense:sum
-    //                     }
-    //                 })
-    //         })
-    //         return Promise.all(promises)
-    //     }).then(results=>{
-    //         resp.status(200).json(results);
-    //     })
-    //     .catch(err => console.log(err));
-    // try{
-    //     const userss=await User.findAll({
-    //         attributes :['id','name',[sequelize.fn('sum', sequelize.col('expenses.price')),'expense']],
-    //         include :[
-    //             {
-    //                 model: Expense,
-    //                 attributes:[]
-    //             }
-    //         ],
-    //         group:['user.id'],
-    //         order:[['expense','DESC']]
-    //     })
-        // console.log(userss)
-        // resp.status(200).json(userss)
-        
-    // }catch(err){
-    //     console.log(err);
-    //     resp.status(500).json(err)
-    // }
 
     try{
 
-        const userss=await User.findAll({
-            attributes :['id','name','totalexpense'],
-            order:[['totalexpense','DESC']]
-        })
+        const userss=await User.find().sort({totalexpense:-1})
         // console.log(userss)
         resp.status(200).json(userss)
     }catch(err){
@@ -504,7 +422,7 @@ exports.downloading=async(req,res,next)=>{
     try {
         const uid=req.iduse;
 
-        const exp= await Expense.findAll({where:{UserId:uid}})
+        const exp= await Expense.findOne({UserId:uid})
 
         // console.log(exp)
 
@@ -560,7 +478,7 @@ exports.allUrl=(req,res,next)=>{
     try{
         const id=req.iduse;
 
-        Filedownloaded.findAll({where:{UserId:id}})
+        Filedownloaded.find({UserId:id})
         .then(file=>{
             // console.log(file)
             res.status(200).json(file)

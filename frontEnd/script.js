@@ -2,11 +2,11 @@
 const url='http://localhost:3000/user/login'
 function checking(event){
     event.preventDefault();
-    if(!check(event)){
+    // if(!check(event)){
         
-        // return false;
-        console.log('not filled correctly')
-    }else{
+    //     // return false;
+    //     console.log('not filled correctly')
+    // }else{
         
        
         const email = document.getElementById('email');
@@ -50,44 +50,44 @@ function checking(event){
         )
         
        
-    }
+    // }
 }
 
 
-function check(event) {
-    const name = document.getElementById('username');
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
+// function check(event) {
+//     const name = document.getElementById('username');
+//     const email = document.getElementById('email');
+//     const password = document.getElementById('password');
 
    
-    email.addEventListener('input',()=>{
-        if(validEmail(email)){
-            document.querySelector('.email-err').style.display='none'
-        }
+//     email.addEventListener('input',()=>{
+//         if(validEmail(email)){
+//             document.querySelector('.email-err').style.display='none'
+//         }
         
-    })
+//     })
 
-    password.addEventListener('input',()=>{
-        if(password.value.length>=6)
-        document.querySelector('.password-err').style.display='none'
-    })
+//     password.addEventListener('input',()=>{
+//         if(password.value.length>=6)
+//         document.querySelector('.password-err').style.display='none'
+//     })
 
    
-    if (!validEmail(email)) {
-        document.querySelector('.email-err').innerHTML="please enter email";
-        document.querySelector('.email-err').style.display='block'
-        event.preventDefault();
-        return false;
-    }
-    if (!validPassword(password)) {
-        document.querySelector('.password-err').innerHTML="please enter password of min length-6";
-        document.querySelector('.password-err').style.display='block'
-        event.preventDefault();
-        return false;
-    }
+//     if (!validEmail(email)) {
+//         document.querySelector('.email-err').innerHTML="please enter email";
+//         document.querySelector('.email-err').style.display='block'
+//         event.preventDefault();
+//         return false;
+//     }
+//     if (!validPassword(password)) {
+//         document.querySelector('.password-err').innerHTML="please enter password of min length-6";
+//         document.querySelector('.password-err').style.display='block'
+//         event.preventDefault();
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 function validEmail(email) {
 

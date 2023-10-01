@@ -19,7 +19,7 @@ function check(event){
                 }
             }).catch(err=>{
                 console.log(err)
-                alert('error occured, invalid link')
+                alert('email id does not exist')
             }
                 
             )

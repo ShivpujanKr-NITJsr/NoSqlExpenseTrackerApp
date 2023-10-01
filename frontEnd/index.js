@@ -57,7 +57,7 @@ document.getElementById('rzp-button1').addEventListener('click',(event)=>{
                         payment_id: response.razorpay_payment_id,
                     },{headers:{'Authorization': localStorage.getItem('token')}})
 
-                    localStorage.setItem('ispremiumuser','1');
+                    localStorage.setItem('ispremiumuser',1);
 
                     document.getElementById('rzp-button1').style.display='none';
                     document.getElementById('rzp-button1').textContent='';
@@ -115,7 +115,7 @@ document.getElementById('rzp-button1').addEventListener('click',(event)=>{
 })
 
 document.addEventListener("DOMContentLoaded",()=>{
-
+    
     if(localStorage.getItem('ispremiumuser')==='1'){
         document.getElementById('rzp-button1').style.display='none';
         document.getElementById('rzp-button1').textContent='';
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         document.getElementById('premiumuser').appendChild(leaderboard)
         document.getElementById('premiumuser').appendChild(download)
 
-        showurl()
+        // showurl()
 
 
 
@@ -163,7 +163,9 @@ document.addEventListener("DOMContentLoaded",()=>{
     while(p.firstChild){
         p.removeChild(p.firstChild);
     }
-    axios.get("http://127.0.0.1:3000/expenses/getexpense?page=1",{ headers })
+    let page=1;
+    // console.log('i came for expense list here')
+    axios.get(`http://127.0.0.1:3000/expenses/getexpense?page=${page}`,{ headers })
         .then((res)=>{
             if(res.data.length===0){
                 alert('no more data found')
@@ -293,7 +295,7 @@ function showUserOnScreen(obj){
 
     children.textContent=obj.price+'- '+obj.description+'- '+obj.category;
 
-    children.id=obj.id;
+    children.id=obj._id;
     const deletebtn=document.createElement('input');
     deletebtn.type='button'
     deletebtn.value='Deleteexpense'
@@ -303,7 +305,7 @@ function showUserOnScreen(obj){
         
         const tim=obj.time;
 
-        axios.delete(`http://127.0.0.1:3000/expenses/deleteexpense/${obj.id}`)
+        axios.delete(`http://127.0.0.1:3000/expenses/deleteexpense/${obj._id}`)
             .then(res=>{
                 console.log('done')
                 // showLeaderBoard()

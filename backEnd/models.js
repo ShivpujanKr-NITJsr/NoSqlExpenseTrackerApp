@@ -1,97 +1,186 @@
+const mongoose=require('mongoose')
 
-const sequelize=require('./databasecon')
+const Schema=mongoose.Schema;
 
-const Sequelize=require('sequelize');
-
-const User = sequelize.define('User',{
-
-    id:{
-        type:Sequelize.INTEGER,
-        autoIncrement:true,
-        primaryKey:true,
-        allowNull:false
-    },
+const userSchema=new Schema({
     name:{
-        type:Sequelize.STRING,
-
+        type:String
     },
     email:{
-        type:Sequelize.STRING,
-        allowNull:false
+        type:String
     },
     password:{
-        type:Sequelize.STRING,
-        allowNull:false
+        type:String
     },
-    ispremiumuser:Sequelize.STRING,
-    totalexpense:Sequelize.INTEGER
+    ispremiumuser:{
+        type:Boolean
+    },
+    totalexpense:{
+        type:Number,
+        default:0
+    },
+    // expenses:[{expenseId:{type:Schema.Types.ObjectId,ref:'Expense'}}]
 })
 
-const Expense = sequelize.define('expense', {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        allowNull: false
+const expenseSchema=new Schema({
+    UserId:{
+        type:String
     },
-    price: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+    price:{
+        type:Number
     },
-    description: {
-        type: Sequelize.STRING,
-        allowNull: false
+    description:{
+        type:String
     },
-    category: {
-        type: Sequelize.STRING,
-        allowNull: false
+    category:{
+        type:String
     }
-},{
-    timestamps:false
-}
-)
-
-const Premium= sequelize.define('premium',{
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        allowNull: false
-    },
-    // price: {
-    //     type: Sequelize.INTEGER,
-    //     allowNull: false
-    // },
-
-    paymentid:Sequelize.STRING,
-    orderid:Sequelize.STRING,
-    status:Sequelize.STRING,
-
 })
 
-const ForgotPassword=sequelize.define('forgotpassword',{
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        
-        allowNull: false
+const premiumSchema=new Schema({
+    UserId:{
+        type:String
     },
-    isActive:Sequelize.BOOLEAN,
-    uuid:Sequelize.STRING
+    price:{
+        type:Number
+    },
+    paymentid:{
+        type:String
+    },
+    orderid:{
+        type:String
+    },
+    status:{
+        type:String
+    }
 })
 
-const Filedownloaded=sequelize.define('filedownloaded',{
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        
-        allowNull: false
+const forgotPasswordSchema=new Schema({
+    UserId:{
+        type:String
     },
-    url:Sequelize.STRING,
-    date:Sequelize.DATE
+    isActive:{
+        type:Boolean
+    },
+    uuid:{
+        type:String
+    }
 })
 
-// Premium.sync({force:true})
+const filedownloadedSchema=new Schema({
+    UserId:{
+        type:String
+    },
+    url:{
+        type:String
+    },
+    date:{
+        type:Date
+    }
+})
+
+const Expense=mongoose.model('Expense',expenseSchema)
+const User=mongoose.model('User',userSchema)
+const Premium=mongoose.model('Premium',premiumSchema)
+const ForgotPassword=mongoose.model('Forgotpassword',forgotPasswordSchema)
+const Filedownloaded=mongoose.model('Filedownloaded',filedownloadedSchema)
+
+
+
 module.exports={Expense,User,Premium,ForgotPassword,Filedownloaded};
+
+// const sequelize=require('./databasecon')
+
+// const Sequelize=require('sequelize');
+
+// const User = sequelize.define('User',{
+
+//     id:{
+//         type:Sequelize.INTEGER,
+//         autoIncrement:true,
+//         primaryKey:true,
+//         allowNull:false
+//     },
+//     name:{
+//         type:Sequelize.STRING,
+
+//     },
+//     email:{
+//         type:Sequelize.STRING,
+//         allowNull:false
+//     },
+//     password:{
+//         type:Sequelize.STRING,
+//         allowNull:false
+//     },
+//     ispremiumuser:Sequelize.STRING,
+//     totalexpense:Sequelize.INTEGER
+// })
+
+// const Expense = sequelize.define('expense', {
+//     id: {
+//         type: Sequelize.INTEGER,
+//         autoIncrement: true,
+//         primaryKey: true,
+//         allowNull: false
+//     },
+//     price: {
+//         type: Sequelize.INTEGER,
+//         allowNull: false
+//     },
+//     description: {
+//         type: Sequelize.STRING,
+//         allowNull: false
+//     },
+//     category: {
+//         type: Sequelize.STRING,
+//         allowNull: false
+//     }
+// },{
+//     timestamps:false
+// }
+// )
+
+// const Premium= sequelize.define('premium',{
+//     id: {
+//         type: Sequelize.INTEGER,
+//         autoIncrement: true,
+//         primaryKey: true,
+//         allowNull: false
+//     },
+//     // price: {
+//     //     type: Sequelize.INTEGER,
+//     //     allowNull: false
+//     // },
+
+//     paymentid:Sequelize.STRING,
+//     orderid:Sequelize.STRING,
+//     status:Sequelize.STRING,
+
+// })
+
+// const ForgotPassword=sequelize.define('forgotpassword',{
+//     id: {
+//         type: Sequelize.INTEGER,
+//         autoIncrement: true,
+//         primaryKey: true,
+        
+//         allowNull: false
+//     },
+//     isActive:Sequelize.BOOLEAN,
+//     uuid:Sequelize.STRING
+// })
+
+// const Filedownloaded=sequelize.define('filedownloaded',{
+//     id: {
+//         type: Sequelize.INTEGER,
+//         autoIncrement: true,
+//         primaryKey: true,
+        
+//         allowNull: false
+//     },
+//     url:Sequelize.STRING,
+//     date:Sequelize.DATE
+// })
+
+// // Premium.sync({force:true})
